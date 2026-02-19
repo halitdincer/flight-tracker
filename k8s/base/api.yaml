@@ -17,6 +17,7 @@ spec:
       initContainers:
         - name: db-migrate
           image: ghcr.io/halitdincer/flight-tracker-api:latest
+          imagePullPolicy: Always
           command: ["bundle", "exec", "rails", "db:migrate"]
           envFrom:
             - secretRef:
@@ -26,6 +27,7 @@ spec:
       containers:
         - name: api
           image: ghcr.io/halitdincer/flight-tracker-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           envFrom:

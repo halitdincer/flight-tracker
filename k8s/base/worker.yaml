@@ -16,6 +16,7 @@ spec:
       containers:
         - name: worker
           image: ghcr.io/halitdincer/flight-tracker-api:latest
+          imagePullPolicy: Always
           command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
           envFrom:
             - secretRef:

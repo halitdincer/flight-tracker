@@ -17,6 +17,7 @@ spec:
       containers:
         - name: web
           image: ghcr.io/halitdincer/flight-tracker-web:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
