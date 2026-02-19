@@ -46,12 +46,14 @@ spec:
             httpGet:
               path: /up
               port: 3000
+              scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /up
               port: 3000
+              scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 5
 ---
