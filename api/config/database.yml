@@ -28,14 +28,12 @@ test:
   <<: *default
   database: flight_tracker_test
 
-# Production uses DATABASE_URL or individual environment variables
-# Example DATABASE_URL: mysql2://user:pass@host/dbname
+# Production uses individual environment variables
 production:
   <<: *default
-  url: <%= ENV["DATABASE_URL"] %>
   database: <%= ENV["DATABASE_NAME"] || "flight_tracker_production" %>
-  username: <%= ENV["DATABASE_USERNAME"] || "flight_tracker" %>
+  username: <%= ENV["DATABASE_USERNAME"] || "root" %>
   password: <%= ENV["DATABASE_PASSWORD"] %>
-  host: <%= ENV["DATABASE_HOST"] || "localhost" %>
+  host: <%= ENV["DATABASE_HOST"] || "mysql" %>
   port: <%= ENV["DATABASE_PORT"] || 3306 %>
   ssl_mode: :disabled
