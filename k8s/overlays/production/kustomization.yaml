@@ -5,6 +5,8 @@ namespace: flight-tracker
 
 resources:
   - ../../base
+  - mysql-sealed-secret.yaml
+  - api-sealed-secret.yaml
 
 # Image tags will be updated by CI/CD
 images:
