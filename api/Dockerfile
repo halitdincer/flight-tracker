@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install runtime dependencies
 RUN apk add --no-cache \
-    mysql-client \
+    mariadb-connector-c \
     tzdata \
     gcompat \
     yaml
