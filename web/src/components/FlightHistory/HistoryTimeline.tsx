@@ -1,4 +1,4 @@
-import { FlightPosition } from '../../types/flight';
+import type { FlightPosition } from '../../types/flight';
 import { format, parseISO } from 'date-fns';
 
 interface HistoryTimelineProps {

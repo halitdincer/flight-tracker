@@ -14,7 +14,7 @@ class CreateFlightPositions < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :flight_positions, [:flight_id, :recorded_at]
+    add_index :flight_positions, [ :flight_id, :recorded_at ]
     add_index :flight_positions, :recorded_at
   end
 end

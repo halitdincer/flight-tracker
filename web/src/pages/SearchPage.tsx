@@ -21,7 +21,7 @@ export default function SearchPage() {
   const [offset, setOffset] = useState(0);
   const limit = 20;
 
-  const { flights, totalCount, hasNextPage, loading, refetch } = useFlights({
+  const { flights, totalCount, hasNextPage, loading } = useFlights({
     callsign: searchQuery || undefined,
     country: country || undefined,
     limit,

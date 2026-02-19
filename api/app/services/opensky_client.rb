@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 class OpenskyClient
-  BASE_URL = 'https://opensky-network.org/api'
+  BASE_URL = "https://opensky-network.org/api"
 
   class ApiError < StandardError; end
   class RateLimitError < ApiError; end
   class NotFoundError < ApiError; end
 
   def initialize(username: nil, password: nil)
-    @username = username || ENV['OPENSKY_USERNAME']
-    @password = password || ENV['OPENSKY_PASSWORD']
+    @username = username || ENV["OPENSKY_USERNAME"]
+    @password = password || ENV["OPENSKY_PASSWORD"]
   end
 
   # Fetch all flight states within an optional bounding box
@@ -27,7 +27,7 @@ class OpenskyClient
       params[:lomax] = lomax
     end
 
-    response = connection.get('states/all', params)
+    response = connection.get("states/all", params)
     handle_response(response)
   end
 
@@ -40,7 +40,7 @@ class OpenskyClient
         interval: 0.5,
         interval_randomness: 0.5,
         backoff_factor: 2,
-        exceptions: [Faraday::TimeoutError, Faraday::ConnectionFailed]
+        exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed ]
       }
       faraday.request :authorization, :basic, @username, @password if @username && @password
       faraday.response :json
@@ -55,9 +55,9 @@ class OpenskyClient
     when 200
       parse_states(response.body)
     when 429
-      raise RateLimitError, 'OpenSky API rate limit exceeded'
+      raise RateLimitError, "OpenSky API rate limit exceeded"
     when 404
-      raise NotFoundError, 'OpenSky API endpoint not found'
+      raise NotFoundError, "OpenSky API endpoint not found"
     else
       raise ApiError, "OpenSky API error: #{response.status}"
     end
@@ -66,9 +66,9 @@ class OpenskyClient
   # Parse OpenSky states array format into hashes
   # OpenSky returns states as arrays, we convert to named hashes
   def parse_states(body)
-    return [] unless body && body['states']
+    return [] unless body && body["states"]
 
-    body['states'].map do |state|
+    body["states"].map do |state|
       {
         icao24: state[0],
         callsign: state[1]&.strip,

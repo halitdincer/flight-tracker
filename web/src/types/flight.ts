@@ -9,13 +9,13 @@ export interface Flight {
 
 export interface FlightPosition {
   id: string;
-  flightId: string;
+  flightId?: string;
   latitude: number;
   longitude: number;
   altitude: number | null;
   velocity: number | null;
   heading: number | null;
-  verticalRate: number | null;
+  verticalRate?: number | null;
   onGround: boolean;
   recordedAt: string;
 }

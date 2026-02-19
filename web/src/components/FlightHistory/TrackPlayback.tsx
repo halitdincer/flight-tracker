@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FlightPosition } from '../../types/flight';
+import type { FlightPosition } from '../../types/flight';
 
 interface TrackPlaybackProps {
   positions: FlightPosition[];

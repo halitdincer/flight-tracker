@@ -10,7 +10,7 @@ class DataRetentionJob < ApplicationJob
 
     Rails.logger.info "[DataRetention] Cleaning positions older than #{cutoff_date}"
 
-    deleted_count = FlightPosition.where('recorded_at < ?', cutoff_date).delete_all
+    deleted_count = FlightPosition.where("recorded_at < ?", cutoff_date).delete_all
 
     Rails.logger.info "[DataRetention] Deleted #{deleted_count} old position records"
   end

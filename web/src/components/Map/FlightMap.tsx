@@ -11,7 +11,7 @@ import { fromLonLat } from 'ol/proj';
 import { Style, Icon } from 'ol/style';
 import { FullScreen, defaults as defaultControls } from 'ol/control';
 import 'ol/ol.css';
-import { LiveFlight } from '../../types/flight';
+import type { LiveFlight } from '../../types/flight';
 import MapControls from './MapControls';
 
 interface FlightMapProps {
@@ -32,7 +32,7 @@ export default function FlightMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
   const vectorSource = useRef<VectorSource>(new VectorSource());
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [, setUserLocation] = useState<[number, number] | null>(null);
 
   // Initialize map
   useEffect(() => {

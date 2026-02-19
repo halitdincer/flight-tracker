@@ -5,7 +5,7 @@ module Mutations
     field :success, Boolean, null: false
     field :flights_updated, Integer, null: false
     field :positions_created, Integer, null: false
-    field :errors, [String], null: false
+    field :errors, [ String ], null: false
 
     def resolve
       client = OpenskyClient.new
@@ -37,7 +37,7 @@ module Mutations
         success: false,
         flights_updated: 0,
         positions_created: 0,
-        errors: [e.message]
+        errors: [ e.message ]
       }
     end
   end

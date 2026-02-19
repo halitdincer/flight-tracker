@@ -7,7 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { DailyStatistic } from '../../types';
+import type { DailyStatistic } from '../../types';
 
 interface CountryBreakdownProps {
   statistics: DailyStatistic[];
@@ -59,7 +59,7 @@ export default function CountryBreakdown({ statistics, loading }: CountryBreakdo
               width={100}
             />
             <Tooltip
-              formatter={(value: number) => [value.toLocaleString(), 'Flights']}
+              formatter={(value: number | undefined) => [value?.toLocaleString() ?? '', 'Flights']}
               labelFormatter={(label, payload) => 
                 payload?.[0]?.payload?.fullCountry || label
               }

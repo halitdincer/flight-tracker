@@ -10,8 +10,8 @@ module Types
       context.schema.object_from_id(id, context)
     end
 
-    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
-      argument :ids, [ID], required: true, description: "IDs of the objects."
+    field :nodes, [ Types::NodeType, null: true ], null: true, description: "Fetches a list of objects given a list of IDs." do
+      argument :ids, [ ID ], required: true, description: "IDs of the objects."
     end
 
     def nodes(ids:)
@@ -35,7 +35,7 @@ module Types
       # Filter by bounding box using latest position
       if bounding_box
         flight_ids = FlightPosition
-          .select('DISTINCT ON (flight_id) flight_id')
+          .select("DISTINCT ON (flight_id) flight_id")
           .where(latitude: bounding_box[:lamin]..bounding_box[:lamax])
           .where(longitude: bounding_box[:lomin]..bounding_box[:lomax])
           .order(:flight_id, recorded_at: :desc)
@@ -63,7 +63,7 @@ module Types
     end
 
     # Flight position history
-    field :flight_history, [Types::FlightPositionType], null: false do
+    field :flight_history, [ Types::FlightPositionType ], null: false do
       argument :icao24, String, required: true
       argument :start_time, GraphQL::Types::ISO8601DateTime, required: false
       argument :end_time, GraphQL::Types::ISO8601DateTime, required: false
@@ -74,13 +74,13 @@ module Types
       return [] unless flight
 
       scope = flight.flight_positions.order(recorded_at: :asc)
-      scope = scope.where('recorded_at >= ?', start_time) if start_time
-      scope = scope.where('recorded_at <= ?', end_time) if end_time
+      scope = scope.where("recorded_at >= ?", start_time) if start_time
+      scope = scope.where("recorded_at <= ?", end_time) if end_time
       scope
     end
 
     # Daily statistics
-    field :statistics, [Types::DailyStatisticType], null: false do
+    field :statistics, [ Types::DailyStatisticType ], null: false do
       argument :start_date, GraphQL::Types::ISO8601Date, required: true
       argument :end_date, GraphQL::Types::ISO8601Date, required: true
     end
@@ -90,19 +90,19 @@ module Types
     end
 
     # Live flights from OpenSky API (proxied)
-    field :live_flights, [Types::LiveFlightType], null: false do
+    field :live_flights, [ Types::LiveFlightType ], null: false do
       argument :bounding_box, Types::BoundingBoxInputType, required: false
     end
 
     def live_flights(bounding_box: nil)
       client = OpenskyClient.new
       params = bounding_box ? bounding_box.to_h : {}
-      
+
       states = client.fetch_states(**params)
-      
+
       states.filter_map do |state|
         next unless state[:latitude] && state[:longitude]
-        
+
         {
           icao24: state[:icao24],
           callsign: state[:callsign],

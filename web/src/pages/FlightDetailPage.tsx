@@ -81,7 +81,7 @@ export default function FlightDetailPage() {
     if (!flight?.positions?.length) return;
 
     // Draw track line
-    const coords = flight.positions.map((p) =>
+    const coords = flight.positions.map((p: { longitude: number; latitude: number }) =>
       fromLonLat([p.longitude, p.latitude])
     );
     trackSource.current.clear();
@@ -95,10 +95,12 @@ export default function FlightDetailPage() {
     // Fit view to track
     if (coords.length > 0) {
       const extent = trackSource.current.getExtent();
-      mapInstance.current?.getView().fit(extent, {
-        padding: [50, 50, 50, 50],
-        maxZoom: 10,
-      });
+      if (extent && extent.every((v) => isFinite(v))) {
+        mapInstance.current?.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          maxZoom: 10,
+        });
+      }
     }
   }, [flight?.positions]);
 

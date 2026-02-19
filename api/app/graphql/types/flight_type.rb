@@ -11,7 +11,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
-    field :positions, [Types::FlightPositionType], null: false do
+    field :positions, [ Types::FlightPositionType ], null: false do
       argument :limit, Integer, required: false, default_value: 100
     end
 

@@ -9,7 +9,7 @@ import {
   Legend,
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
-import { DailyStatistic } from '../../types';
+import type { DailyStatistic } from '../../types';
 
 interface FlightCountChartProps {
   statistics: DailyStatistic[];
@@ -47,7 +47,7 @@ export default function FlightCountChart({ statistics, loading }: FlightCountCha
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
               labelFormatter={(label) => `Date: ${label}`}
-              formatter={(value: number) => [value.toLocaleString(), '']}
+              formatter={(value: number | undefined) => [value?.toLocaleString() ?? '', '']}
             />
             <Legend />
             <Line

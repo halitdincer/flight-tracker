@@ -1,6 +1,6 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { GET_LIVE_FLIGHTS, GET_FLIGHTS, GET_FLIGHT } from '../graphql/queries/flights';
-import { LiveFlight, Flight } from '../types/flight';
+import type { LiveFlight, Flight } from '../types/flight';
 
 interface LiveFlightsData {
   liveFlights: LiveFlight[];

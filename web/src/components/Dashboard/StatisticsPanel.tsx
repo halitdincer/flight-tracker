@@ -1,4 +1,4 @@
-import { DailyStatistic } from '../../types';
+import type { DailyStatistic } from '../../types';
 
 interface StatisticsPanelProps {
   statistics: DailyStatistic[];

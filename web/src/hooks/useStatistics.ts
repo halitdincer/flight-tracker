@@ -1,6 +1,6 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { GET_STATISTICS } from '../graphql/queries/statistics';
-import { DailyStatistic } from '../types';
+import type { DailyStatistic } from '../types';
 import { format, subDays } from 'date-fns';
 
 interface StatisticsData {

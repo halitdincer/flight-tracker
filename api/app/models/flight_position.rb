@@ -7,7 +7,7 @@ class FlightPosition < ApplicationRecord
   validates :longitude, presence: true, numericality: { greater_than_or_equal_to: -180, less_than_or_equal_to: 180 }
   validates :recorded_at, presence: true
 
-  scope :recent, -> { where('recorded_at > ?', 24.hours.ago) }
+  scope :recent, -> { where("recorded_at > ?", 24.hours.ago) }
   scope :in_time_range, ->(start_time, end_time) { where(recorded_at: start_time..end_time) }
 
   # Create a position record from OpenSky state data

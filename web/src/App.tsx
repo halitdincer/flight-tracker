@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import { apolloClient } from './lib/apolloClient';
 import { Layout } from './components/common';
 import { MapPage, DashboardPage, SearchPage, FlightDetailPage } from './pages';
