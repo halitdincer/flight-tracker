@@ -49,7 +49,7 @@ COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /app /app
 
 # Create non-root user
-RUN adduser -D -u 1000 rails && \
+RUN useradd -m -u 1000 rails && \
     chown -R rails:rails /app
 
 USER rails
