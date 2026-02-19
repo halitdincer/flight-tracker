@@ -12,7 +12,7 @@ spec:
     - hosts:
         - flights.halitdincer.com
         - api.flights.halitdincer.com
-      secretName: flight-tracker-tls
+      secretName: flight-tracker-v2-tls
   rules:
     - host: flights.halitdincer.com
       http:
