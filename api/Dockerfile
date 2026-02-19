@@ -7,7 +7,8 @@ WORKDIR /app
 RUN apk add --no-cache \
     mysql-client \
     tzdata \
-    gcompat
+    gcompat \
+    yaml
 
 # Set production environment
 ENV RAILS_ENV=production \
@@ -22,7 +23,8 @@ FROM base AS build
 RUN apk add --no-cache \
     build-base \
     mysql-dev \
-    git
+    git \
+    yaml-dev
 
 # Install gems
 COPY Gemfile Gemfile.lock ./
