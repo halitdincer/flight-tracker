@@ -1,0 +1,25 @@
+:concurrency: 5
+:queues:
+  - default
+  - data_fetcher
+  - statistics
+
+:scheduler:
+  :schedule:
+    flight_data_fetcher:
+      cron: '*/5 * * * *'  # Every 5 minutes
+      class: FlightDataFetcherJob
+      queue: data_fetcher
+      description: "Fetch flight data from OpenSky API"
+    
+    statistics_aggregator:
+      cron: '0 1 * * *'  # Daily at 1 AM
+      class: StatisticsAggregatorJob
+      queue: statistics
+      description: "Generate daily flight statistics"
+    
+    data_retention:
+      cron: '0 3 * * 0'  # Weekly on Sunday at 3 AM
+      class: DataRetentionJob
+      queue: default
+      description: "Clean up old position data"

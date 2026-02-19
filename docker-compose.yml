@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: flight-tracker-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: flight_tracker_development
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Sidekiq
+  redis:
+    image: redis:7-alpine
+    container_name: flight-tracker-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Rails API
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: production
+    container_name: flight-tracker-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: mysql2://root:password@mysql:3306/flight_tracker_development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-development_secret_key_base_that_is_at_least_128_bits_long}
+      RAILS_LOG_TO_STDOUT: "true"
+    ports:
+      - "3000:3000"
+
+  # Sidekiq Worker
+  worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.worker
+      target: production
+    container_name: flight-tracker-worker
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: mysql2://root:password@mysql:3306/flight_tracker_development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-development_secret_key_base_that_is_at_least_128_bits_long}
+      RAILS_LOG_TO_STDOUT: "true"
+
+  # React Frontend
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: production
+    container_name: flight-tracker-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  mysql_data:
+  redis_data:
