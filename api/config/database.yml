@@ -36,5 +36,5 @@ production:
   password: <%= ENV["DATABASE_PASSWORD"] %>
   host: <%= ENV["DATABASE_HOST"] || "mysql" %>
   port: <%= ENV["DATABASE_PORT"] || 3306 %>
+  ssl_mode: :disabled
   sslverify: false
-  sslmode: disabled
