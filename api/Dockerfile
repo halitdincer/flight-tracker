@@ -1,14 +1,16 @@
 # syntax=docker/dockerfile:1
-FROM ruby:3.2.10-alpine AS base
+FROM ruby:3.2.10-slim AS base
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache \
-    mariadb-connector-c \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    default-mysql-client \
+    libmariadb3 \
     tzdata \
-    gcompat \
-    yaml
+    && rm -rf /var/lib/apt/lists/*
 
 # Set production environment
 ENV RAILS_ENV=production \
@@ -20,11 +22,13 @@ ENV RAILS_ENV=production \
 FROM base AS build
 
 # Install build dependencies
-RUN apk add --no-cache \
-    build-base \
-    mysql-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    default-libmysqlclient-dev \
     git \
-    yaml-dev
+    pkg-config \
+    libyaml-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install gems
 COPY Gemfile Gemfile.lock ./
@@ -54,7 +58,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -q --spider http://localhost:3000/up || exit 1
+    CMD curl -fsS http://localhost:3000/up || exit 1
 
 # Start the server
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
