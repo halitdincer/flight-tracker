@@ -72,11 +72,13 @@ export default function MapPage() {
 
   const isRateLimitWarning = isRateLimitMessage(errorMessage);
   const lastUpdatedText = lastUpdatedAt
-    ? lastUpdatedAt.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
+    ? Date.now() - lastUpdatedAt.getTime() > 24 * 60 * 60 * 1000
+      ? 'more than 24 hours'
+      : lastUpdatedAt.toLocaleTimeString([], {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        })
     : null;
 
   return (
@@ -104,7 +106,7 @@ export default function MapPage() {
       />
 
       {panelOpen && (
-        <aside className="absolute left-3 right-3 top-16 z-20 max-h-[calc(100%-5rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur md:left-4 md:right-auto md:top-20 md:w-[360px] md:max-h-[calc(100%-6rem)]">
+        <aside className="absolute bottom-20 left-3 right-3 z-20 max-h-[65vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur md:bottom-5 md:left-4 md:right-auto md:w-[360px] md:max-h-[70vh]">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">Flight Tracker</h2>
             <button
