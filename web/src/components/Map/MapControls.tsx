@@ -5,6 +5,7 @@ interface MapControlsProps {
   panelOpen: boolean;
   loading: boolean;
   flightCount: number;
+  lastUpdatedText?: string | null;
 }
 
 export default function MapControls({
@@ -14,6 +15,7 @@ export default function MapControls({
   panelOpen,
   loading,
   flightCount,
+  lastUpdatedText,
 }: MapControlsProps) {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between p-3 md:p-4">
@@ -46,6 +48,11 @@ export default function MapControls({
             />
           </svg>
         </button>
+        {lastUpdatedText && (
+          <div className="rounded-lg bg-white/95 px-2 py-1 text-[11px] font-medium text-slate-600 shadow ring-1 ring-slate-200 backdrop-blur">
+            Updated {lastUpdatedText}
+          </div>
+        )}
         <button
           onClick={onGeolocate}
           className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white"

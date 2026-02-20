@@ -20,6 +20,7 @@ interface FlightMapProps {
   onPanelToggle: () => void;
   panelOpen: boolean;
   loading: boolean;
+  lastUpdatedText?: string | null;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
 }
@@ -30,6 +31,7 @@ export default function FlightMap({
   onPanelToggle,
   panelOpen,
   loading,
+  lastUpdatedText,
   selectedFlight,
   onFlightSelect 
 }: FlightMapProps) {
@@ -166,6 +168,7 @@ export default function FlightMap({
         panelOpen={panelOpen}
         loading={loading}
         flightCount={flights.length}
+        lastUpdatedText={lastUpdatedText}
       />
       {selectedFlight && (
         <FlightInfoPanel

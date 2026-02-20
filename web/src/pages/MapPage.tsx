@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FlightMap } from '../components/Map';
 import { useFlights, useLiveFlights } from '../hooks/useFlights';
 
@@ -14,6 +14,7 @@ export default function MapPage() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [searchCallsign, setSearchCallsign] = useState('');
   const [searchCountry, setSearchCountry] = useState('');
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const { flights, loading, error, refetch } = useLiveFlights();
@@ -33,11 +34,18 @@ export default function MapPage() {
     []
   );
 
+  useEffect(() => {
+    if (!loading && !error) {
+      setLastUpdatedAt((previous) => previous || new Date());
+    }
+  }, [loading, error]);
+
   const handleRefresh = async () => {
     setRefreshError(null);
     setRefreshing(true);
     try {
       await refetch();
+      setLastUpdatedAt(new Date());
     } catch (caughtError) {
       const message =
         caughtError instanceof Error ? caughtError.message : 'Unknown error';
@@ -63,6 +71,13 @@ export default function MapPage() {
     queryError;
 
   const isRateLimitWarning = isRateLimitMessage(errorMessage);
+  const lastUpdatedText = lastUpdatedAt
+    ? lastUpdatedAt.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+    : null;
 
   return (
     <div className="relative h-screen">
@@ -83,6 +98,7 @@ export default function MapPage() {
         onPanelToggle={() => setPanelOpen((open) => !open)}
         panelOpen={panelOpen}
         loading={loading || refreshing}
+        lastUpdatedText={lastUpdatedText}
         selectedFlight={selectedFlight}
         onFlightSelect={setSelectedFlight}
       />
