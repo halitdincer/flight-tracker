@@ -16,20 +16,26 @@ import MapControls from './MapControls';
 
 interface FlightMapProps {
   flights: LiveFlight[];
-  onPanelToggle: () => void;
   panelOpen: boolean;
+  onPanelToggle: () => void;
+  onRefresh: () => void;
+  onGeolocate: () => void;
+  refreshing: boolean;
   geolocateRequest: number;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
 }
 
-export default function FlightMap({ 
-  flights, 
-  onPanelToggle,
+export default function FlightMap({
+  flights,
   panelOpen,
+  onPanelToggle,
+  onRefresh,
+  onGeolocate,
+  refreshing,
   geolocateRequest,
   selectedFlight,
-  onFlightSelect 
+  onFlightSelect,
 }: FlightMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
@@ -131,41 +137,41 @@ export default function FlightMap({
     vectorSource.current.addFeatures(features);
   }, [flights]);
 
-  const handleGeolocate = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords: [number, number] = [
-            position.coords.longitude,
-            position.coords.latitude,
-          ];
-          setUserLocation(coords);
-          mapInstance.current?.getView().animate({
-            center: fromLonLat(coords),
-            zoom: 8,
-            duration: 500,
-          });
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-        }
-      );
-    }
-  };
-
+  // Geolocation
   useEffect(() => {
-    if (geolocateRequest > 0) {
-      handleGeolocate();
-    }
+    if (geolocateRequest <= 0) return;
+    if (!('geolocation' in navigator)) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords: [number, number] = [
+          position.coords.longitude,
+          position.coords.latitude,
+        ];
+        setUserLocation(coords);
+        mapInstance.current?.getView().animate({
+          center: fromLonLat(coords),
+          zoom: 8,
+          duration: 500,
+        });
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+      }
+    );
   }, [geolocateRequest]);
 
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
       <MapControls
-        onPanelToggle={onPanelToggle}
         panelOpen={panelOpen}
+        onPanelToggle={onPanelToggle}
+        onRefresh={onRefresh}
+        onGeolocate={onGeolocate}
+        refreshing={refreshing}
       />
+
       {selectedFlight && (
         <FlightInfoPanel
           flight={flights.find((f) => f.icao24 === selectedFlight)}
@@ -185,36 +191,41 @@ function FlightInfoPanel({ flight, onClose }: FlightInfoPanelProps) {
   if (!flight) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 bg-white text-slate-900 rounded-lg shadow-lg p-4 min-w-64">
+    <div
+      className="absolute top-3 right-3 z-20 rounded-xl bg-white/95 p-4 shadow-lg ring-1 ring-slate-200 backdrop-blur min-w-56 max-w-72 md:top-4 md:right-4"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+    >
       <div className="flex justify-between items-start mb-2">
-        <h3 className="font-bold text-lg">
+        <h3 className="font-bold text-base text-slate-900">
           {flight.callsign || flight.icao24}
         </h3>
         <button
           onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
+          className="ml-2 flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:text-slate-700"
         >
-          ✕
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div className="space-y-1 text-sm">
-        <p><span className="text-gray-500">ICAO24:</span> {flight.icao24}</p>
-        <p><span className="text-gray-500">Country:</span> {flight.originCountry}</p>
+        <p><span className="text-slate-400">ICAO24:</span> <span className="text-slate-700">{flight.icao24}</span></p>
+        <p><span className="text-slate-400">Country:</span> <span className="text-slate-700">{flight.originCountry}</span></p>
         <p>
-          <span className="text-gray-500">Altitude:</span>{' '}
-          {flight.altitude ? `${Math.round(flight.altitude)}m` : 'N/A'}
+          <span className="text-slate-400">Altitude:</span>{' '}
+          <span className="text-slate-700">{flight.altitude ? `${Math.round(flight.altitude)}m` : 'N/A'}</span>
         </p>
         <p>
-          <span className="text-gray-500">Speed:</span>{' '}
-          {flight.velocity ? `${Math.round(flight.velocity)} m/s` : 'N/A'}
+          <span className="text-slate-400">Speed:</span>{' '}
+          <span className="text-slate-700">{flight.velocity ? `${Math.round(flight.velocity)} m/s` : 'N/A'}</span>
         </p>
         <p>
-          <span className="text-gray-500">Heading:</span>{' '}
-          {flight.heading ? `${Math.round(flight.heading)}°` : 'N/A'}
+          <span className="text-slate-400">Heading:</span>{' '}
+          <span className="text-slate-700">{flight.heading ? `${Math.round(flight.heading)}deg` : 'N/A'}</span>
         </p>
         <p>
-          <span className="text-gray-500">Status:</span>{' '}
-          {flight.onGround ? 'On Ground' : 'Airborne'}
+          <span className="text-slate-400">Status:</span>{' '}
+          <span className="text-slate-700">{flight.onGround ? 'On Ground' : 'Airborne'}</span>
         </p>
       </div>
     </div>
