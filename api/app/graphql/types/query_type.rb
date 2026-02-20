@@ -116,8 +116,50 @@ module Types
           on_ground: state[:on_ground] || false
         }
       end
-    rescue OpenskyClient::ApiError => e
-      raise GraphQL::ExecutionError, e.message
+    rescue OpenskyClient::RateLimitError, OpenskyClient::ApiError => api_error
+      begin
+        cached_live_flights(bounding_box: bounding_box)
+      rescue StandardError => fallback_error
+        raise GraphQL::ExecutionError, "#{api_error.message}; cached fallback failed: #{fallback_error.message}"
+      end
+    end
+
+    private
+
+    def cached_live_flights(bounding_box: nil)
+      window_start = 2.hours.ago
+      latest_positions = FlightPosition
+        .where("recorded_at >= ?", window_start)
+        .select("flight_id, MAX(recorded_at) AS max_recorded_at")
+        .group(:flight_id)
+
+      scope = FlightPosition
+        .joins(:flight)
+        .joins(
+          "INNER JOIN (#{latest_positions.to_sql}) latest_positions " \
+          "ON latest_positions.flight_id = flight_positions.flight_id " \
+          "AND latest_positions.max_recorded_at = flight_positions.recorded_at"
+        )
+
+      if bounding_box
+        scope = scope.where(latitude: bounding_box[:lamin]..bounding_box[:lamax])
+          .where(longitude: bounding_box[:lomin]..bounding_box[:lomax])
+      end
+
+      scope.includes(:flight).map do |position|
+        {
+          icao24: position.flight.icao24,
+          callsign: position.flight.callsign,
+          origin_country: position.flight.origin_country,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          altitude: position.altitude,
+          velocity: position.velocity,
+          heading: position.heading,
+          vertical_rate: position.vertical_rate,
+          on_ground: position.on_ground || false
+        }
+      end
     end
   end
 end
