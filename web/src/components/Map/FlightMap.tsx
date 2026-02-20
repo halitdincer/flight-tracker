@@ -167,7 +167,6 @@ export default function FlightMap({
         onPanelToggle={onPanelToggle}
         panelOpen={panelOpen}
         loading={loading}
-        flightCount={flights.length}
         lastUpdatedText={lastUpdatedText}
       />
       {selectedFlight && (

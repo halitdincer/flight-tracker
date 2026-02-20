@@ -4,7 +4,6 @@ interface MapControlsProps {
   onPanelToggle: () => void;
   panelOpen: boolean;
   loading: boolean;
-  flightCount: number;
   lastUpdatedText?: string | null;
 }
 
@@ -14,11 +13,13 @@ export default function MapControls({
   onPanelToggle,
   panelOpen,
   loading,
-  flightCount,
   lastUpdatedText,
 }: MapControlsProps) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-3 pb-4 md:p-4 md:pb-5">
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-3 md:p-4"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+    >
       <button
         onClick={onPanelToggle}
         className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white"
@@ -88,10 +89,6 @@ export default function MapControls({
               Updated {lastUpdatedText}
             </div>
           )}
-        </div>
-        <div className="rounded-xl bg-white/95 px-3 py-2 text-center text-sm text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur">
-          <span className="font-semibold">{flightCount.toLocaleString()}</span>
-          <span className="ml-1 text-slate-500">flights</span>
         </div>
       </div>
     </div>

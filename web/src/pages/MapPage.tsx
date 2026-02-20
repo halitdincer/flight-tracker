@@ -11,7 +11,7 @@ const isRateLimitMessage = (message: string | null | undefined) =>
 
 export default function MapPage() {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [searchCallsign, setSearchCallsign] = useState('');
   const [searchCountry, setSearchCountry] = useState('');
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
@@ -109,12 +109,17 @@ export default function MapPage() {
         <aside className="absolute bottom-20 left-3 right-3 z-20 max-h-[65vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur md:bottom-5 md:left-4 md:right-auto md:w-[360px] md:max-h-[70vh]">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">Flight Tracker</h2>
-            <button
-              onClick={() => setPanelOpen(false)}
-              className="rounded-md px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
-            >
-              Hide
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
+                {flights.length.toLocaleString()} flights
+              </div>
+              <button
+                onClick={() => setPanelOpen(false)}
+                className="rounded-md px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
+              >
+                Hide
+              </button>
+            </div>
           </div>
 
           <div className="mb-4 flex flex-wrap gap-2">
