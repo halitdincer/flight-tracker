@@ -2,14 +2,17 @@
 
 class OpenskyClient
   BASE_URL = "https://opensky-network.org/api"
+  OAUTH_TOKEN_URL = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
 
   class ApiError < StandardError; end
   class RateLimitError < ApiError; end
   class NotFoundError < ApiError; end
 
-  def initialize(username: nil, password: nil)
+  def initialize(username: nil, password: nil, client_id: nil, client_secret: nil)
     @username = username || ENV["OPENSKY_USERNAME"]
     @password = password || ENV["OPENSKY_PASSWORD"]
+    @client_id = client_id || ENV["OPENSKY_CLIENT_ID"]
+    @client_secret = client_secret || ENV["OPENSKY_CLIENT_SECRET"]
   end
 
   # Fetch all flight states within an optional bounding box
@@ -27,7 +30,12 @@ class OpenskyClient
       params[:lomax] = lomax
     end
 
-    response = connection.get("states/all", params)
+    response = if oauth_enabled?
+      connection.get("states/all", params, { "Authorization" => "Bearer #{access_token}" })
+    else
+      connection.get("states/all", params)
+    end
+
     handle_response(response)
   end
 
@@ -42,7 +50,63 @@ class OpenskyClient
         backoff_factor: 2,
         exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed ]
       }
-      faraday.request :authorization, :basic, @username, @password if @username && @password
+      faraday.request :authorization, :basic, @username, @password if basic_auth_enabled?
+      faraday.response :json
+      faraday.adapter Faraday.default_adapter
+      faraday.options.timeout = 30
+      faraday.options.open_timeout = 10
+    end
+  end
+
+  def oauth_enabled?
+    @client_id.to_s != "" && @client_secret.to_s != ""
+  end
+
+  def basic_auth_enabled?
+    !oauth_enabled? && @username.to_s != "" && @password.to_s != ""
+  end
+
+  def access_token
+    refresh_access_token! if @access_token.nil? || Time.now >= @access_token_expires_at
+    @access_token
+  end
+
+  def refresh_access_token!
+    response = token_connection.post do |request|
+      request.body = {
+        grant_type: "client_credentials",
+        client_id: @client_id,
+        client_secret: @client_secret
+      }
+    end
+
+    unless response.status == 200
+      raise ApiError, "OpenSky OAuth token request failed: #{response.status}"
+    end
+
+    token = response.body.is_a?(Hash) ? response.body["access_token"] : nil
+    expires_in = response.body.is_a?(Hash) ? response.body["expires_in"].to_i : 0
+
+    if token.to_s == ""
+      raise ApiError, "OpenSky OAuth token request failed: missing access_token"
+    end
+
+    @access_token = token
+    @access_token_expires_at = Time.now + [expires_in - 30, 0].max
+  rescue Faraday::Error => e
+    raise ApiError, "OpenSky OAuth token request failed: #{e.message}"
+  end
+
+  def token_connection
+    @token_connection ||= Faraday.new(url: OAUTH_TOKEN_URL) do |faraday|
+      faraday.request :retry, {
+        max: 3,
+        interval: 0.5,
+        interval_randomness: 0.5,
+        backoff_factor: 2,
+        exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed ]
+      }
+      faraday.request :url_encoded
       faraday.response :json
       faraday.adapter Faraday.default_adapter
       faraday.options.timeout = 30
