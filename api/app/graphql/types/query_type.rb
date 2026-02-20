@@ -116,7 +116,13 @@ module Types
           on_ground: state[:on_ground] || false
         }
       end
-    rescue OpenskyClient::RateLimitError, OpenskyClient::ApiError => api_error
+    rescue OpenskyClient::RateLimitError
+      cached_flights = cached_live_flights(bounding_box: bounding_box)
+      return cached_flights if cached_flights.any?
+
+      raise GraphQL::ExecutionError,
+        "OpenSky API rate limit exceeded and no cached flights are available right now."
+    rescue OpenskyClient::ApiError => api_error
       begin
         cached_live_flights(bounding_box: bounding_box)
       rescue StandardError => fallback_error

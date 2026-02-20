@@ -89,4 +89,28 @@ RSpec.describe 'LiveFlights query', type: :request do
       'onGround' => true
     )
   end
+
+  it 'returns a GraphQL error when OpenSky is rate limited and cache is empty' do
+    client = instance_double(OpenskyClient)
+    allow(client).to receive(:fetch_states).and_raise(OpenskyClient::RateLimitError, 'OpenSky API rate limit exceeded')
+    allow(OpenskyClient).to receive(:new).and_return(client)
+
+    post '/graphql', params: { query: <<~GRAPHQL }
+      query {
+        liveFlights {
+          icao24
+        }
+      }
+    GRAPHQL
+
+    expect(response).to have_http_status(:ok)
+
+    body = JSON.parse(response.body)
+    expect(body.dig('data', 'liveFlights')).to be_nil
+    expect(body['errors']).to include(
+      a_hash_including(
+        'message' => 'OpenSky API rate limit exceeded and no cached flights are available right now.'
+      )
+    )
+  end
 end
