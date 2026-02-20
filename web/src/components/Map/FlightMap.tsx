@@ -17,6 +17,8 @@ import MapControls from './MapControls';
 interface FlightMapProps {
   flights: LiveFlight[];
   onRefresh: () => Promise<unknown> | void;
+  onPanelToggle: () => void;
+  panelOpen: boolean;
   loading: boolean;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
@@ -25,6 +27,8 @@ interface FlightMapProps {
 export default function FlightMap({ 
   flights, 
   onRefresh, 
+  onPanelToggle,
+  panelOpen,
   loading,
   selectedFlight,
   onFlightSelect 
@@ -154,6 +158,8 @@ export default function FlightMap({
       <MapControls
         onRefresh={onRefresh}
         onGeolocate={handleGeolocate}
+        onPanelToggle={onPanelToggle}
+        panelOpen={panelOpen}
         loading={loading}
         flightCount={flights.length}
       />
