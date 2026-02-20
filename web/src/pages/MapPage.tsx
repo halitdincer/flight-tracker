@@ -36,17 +36,6 @@ export default function MapPage() {
     []
   );
 
-  const isIosSafari = useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-
-    const ua = navigator.userAgent;
-    const isIosDevice = /iP(ad|hone|od)/.test(ua);
-    const isSafariEngine = /Safari/i.test(ua);
-    const isOtherIosBrowser = /(CriOS|FxiOS|EdgiOS|OPiOS)/.test(ua);
-
-    return isIosDevice && isSafariEngine && !isOtherIosBrowser;
-  }, []);
-
   useEffect(() => {
     if (!loading && !error) {
       setLastUpdatedAt((previous) => previous || new Date());
@@ -122,7 +111,6 @@ export default function MapPage() {
         flights={flights}
         onPanelToggle={() => setPanelOpen((open) => !open)}
         panelOpen={panelOpen}
-        iosSafari={isIosSafari}
         geolocateRequest={geolocateRequest}
         selectedFlight={selectedFlight}
         onFlightSelect={setSelectedFlight}

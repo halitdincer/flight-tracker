@@ -1,21 +1,17 @@
 interface MapControlsProps {
   onPanelToggle: () => void;
   panelOpen: boolean;
-  iosSafari: boolean;
 }
 
 export default function MapControls({
   onPanelToggle,
   panelOpen,
-  iosSafari,
 }: MapControlsProps) {
   return (
     <div
       className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-end p-3 md:p-4"
       style={{
-        paddingBottom: iosSafari
-          ? 'calc(env(safe-area-inset-bottom) + 3.5rem)'
-          : 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)',
       }}
     >
       <button
