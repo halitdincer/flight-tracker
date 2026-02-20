@@ -25,11 +25,11 @@ export default function MapControls({
         <span>{panelOpen ? 'Close panel' : 'Open panel'}</span>
       </button>
 
-      <div className="pointer-events-auto flex flex-col gap-2">
+      <div className="pointer-events-auto flex flex-col items-end gap-2">
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="rounded-xl bg-white/95 p-3 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           title="Refresh flight data"
         >
           <svg
@@ -48,7 +48,7 @@ export default function MapControls({
         </button>
         <button
           onClick={onGeolocate}
-          className="rounded-xl bg-white/95 p-3 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white"
+          className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/95 text-slate-900 shadow-lg ring-1 ring-slate-200 backdrop-blur hover:bg-white"
           title="Go to my location"
         >
           <svg

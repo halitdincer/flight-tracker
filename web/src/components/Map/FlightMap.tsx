@@ -9,7 +9,7 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { fromLonLat } from 'ol/proj';
 import { Style, Icon } from 'ol/style';
-import { FullScreen, defaults as defaultControls } from 'ol/control';
+import { defaults as defaultControls } from 'ol/control';
 import 'ol/ol.css';
 import type { LiveFlight } from '../../types/flight';
 import MapControls from './MapControls';
@@ -69,7 +69,11 @@ export default function FlightMap({
         center: fromLonLat([0, 20]),
         zoom: 3,
       }),
-      controls: defaultControls().extend([new FullScreen()]),
+      controls: defaultControls({
+        zoom: false,
+        rotate: false,
+        attribution: false,
+      }),
     });
 
     // Click handler for flight selection
