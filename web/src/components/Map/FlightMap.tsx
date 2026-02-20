@@ -18,6 +18,7 @@ interface FlightMapProps {
   flights: LiveFlight[];
   onPanelToggle: () => void;
   panelOpen: boolean;
+  iosSafari: boolean;
   geolocateRequest: number;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
@@ -27,6 +28,7 @@ export default function FlightMap({
   flights, 
   onPanelToggle,
   panelOpen,
+  iosSafari,
   geolocateRequest,
   selectedFlight,
   onFlightSelect 
@@ -165,6 +167,7 @@ export default function FlightMap({
       <MapControls
         onPanelToggle={onPanelToggle}
         panelOpen={panelOpen}
+        iosSafari={iosSafari}
       />
       {selectedFlight && (
         <FlightInfoPanel

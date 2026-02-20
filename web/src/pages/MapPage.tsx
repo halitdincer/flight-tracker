@@ -36,6 +36,17 @@ export default function MapPage() {
     []
   );
 
+  const isIosSafari = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+
+    const ua = navigator.userAgent;
+    const isIosDevice = /iP(ad|hone|od)/.test(ua);
+    const isSafariEngine = /Safari/i.test(ua);
+    const isOtherIosBrowser = /(CriOS|FxiOS|EdgiOS|OPiOS)/.test(ua);
+
+    return isIosDevice && isSafariEngine && !isOtherIosBrowser;
+  }, []);
+
   useEffect(() => {
     if (!loading && !error) {
       setLastUpdatedAt((previous) => previous || new Date());
@@ -95,7 +106,7 @@ export default function MapPage() {
     : null;
 
   return (
-    <div className="relative h-screen">
+    <div className="relative h-full">
       {errorMessage && (
         <div
           className={`absolute left-1/2 top-20 z-30 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 rounded-md px-4 py-2 text-sm shadow md:top-4 ${
@@ -111,6 +122,7 @@ export default function MapPage() {
         flights={flights}
         onPanelToggle={() => setPanelOpen((open) => !open)}
         panelOpen={panelOpen}
+        iosSafari={isIosSafari}
         geolocateRequest={geolocateRequest}
         selectedFlight={selectedFlight}
         onFlightSelect={setSelectedFlight}
