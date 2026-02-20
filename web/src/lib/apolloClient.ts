@@ -1,7 +1,11 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 
+const defaultApiUrl = import.meta.env.PROD
+  ? 'https://api.flights.halitdincer.com/graphql'
+  : 'http://localhost:3000/graphql';
+
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_API_URL || 'http://localhost:3000/graphql',
+  uri: import.meta.env.VITE_API_URL || defaultApiUrl,
 });
 
 // For now, we only use HTTP. WebSocket subscriptions can be added later.

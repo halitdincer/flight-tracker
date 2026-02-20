@@ -16,7 +16,7 @@ import MapControls from './MapControls';
 
 interface FlightMapProps {
   flights: LiveFlight[];
-  onRefresh: () => void;
+  onRefresh: () => Promise<unknown> | void;
   loading: boolean;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
@@ -103,7 +103,9 @@ export default function FlightMap({
     vectorSource.current.clear();
 
     const features = flights
-      .filter((f) => f.latitude && f.longitude)
+      .filter(
+        (f) => Number.isFinite(f.latitude) && Number.isFinite(f.longitude)
+      )
       .map((flight) => {
         const feature = new Feature({
           geometry: new Point(fromLonLat([flight.longitude, flight.latitude])),
@@ -174,7 +176,7 @@ function FlightInfoPanel({ flight, onClose }: FlightInfoPanelProps) {
   if (!flight) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 min-w-64">
+    <div className="absolute bottom-4 left-4 bg-white text-slate-900 rounded-lg shadow-lg p-4 min-w-64">
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-bold text-lg">
           {flight.callsign || flight.icao24}

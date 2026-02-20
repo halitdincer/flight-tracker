@@ -16,7 +16,7 @@ export default function MapControls({
       <button
         onClick={onRefresh}
         disabled={loading}
-        className="bg-white rounded-lg shadow-lg p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-white text-slate-900 rounded-lg shadow-lg p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         title="Refresh flight data"
       >
         <svg
@@ -35,7 +35,7 @@ export default function MapControls({
       </button>
       <button
         onClick={onGeolocate}
-        className="bg-white rounded-lg shadow-lg p-3 hover:bg-gray-100"
+        className="bg-white text-slate-900 rounded-lg shadow-lg p-3 hover:bg-gray-100"
         title="Go to my location"
       >
         <svg
@@ -58,7 +58,7 @@ export default function MapControls({
           />
         </svg>
       </button>
-      <div className="bg-white rounded-lg shadow-lg px-3 py-2 text-sm text-center">
+      <div className="bg-white text-slate-900 rounded-lg shadow-lg px-3 py-2 text-sm text-center">
         <span className="font-semibold">{flightCount.toLocaleString()}</span>
         <span className="text-gray-500 ml-1">flights</span>
       </div>
