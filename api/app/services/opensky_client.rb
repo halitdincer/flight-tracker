@@ -92,7 +92,7 @@ class OpenskyClient
     end
 
     @access_token = token
-    @access_token_expires_at = Time.now + [expires_in - 30, 0].max
+    @access_token_expires_at = Time.now + [ expires_in - 30, 0 ].max
   rescue Faraday::Error => e
     raise ApiError, "OpenSky OAuth token request failed: #{e.message}"
   end
