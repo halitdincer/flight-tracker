@@ -12,6 +12,8 @@ const isRateLimitMessage = (message: string | null | undefined) =>
 export default function MapPage() {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [geolocateRequest, setGeolocateRequest] = useState(0);
+  const [, setTick] = useState(0);
   const [searchCallsign, setSearchCallsign] = useState('');
   const [searchCountry, setSearchCountry] = useState('');
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
@@ -39,6 +41,14 @@ export default function MapPage() {
       setLastUpdatedAt((previous) => previous || new Date());
     }
   }, [loading, error]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setTick((current) => current + 1);
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const handleRefresh = async () => {
     setRefreshError(null);
@@ -72,13 +82,16 @@ export default function MapPage() {
 
   const isRateLimitWarning = isRateLimitMessage(errorMessage);
   const lastUpdatedText = lastUpdatedAt
-    ? Date.now() - lastUpdatedAt.getTime() > 24 * 60 * 60 * 1000
-      ? 'more than 24 hours'
-      : lastUpdatedAt.toLocaleTimeString([], {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        })
+    ? (() => {
+        const elapsedMinutes = Math.floor((Date.now() - lastUpdatedAt.getTime()) / 60_000);
+        if (elapsedMinutes >= 24 * 60) return 'more than 24 hours ago';
+        if (elapsedMinutes >= 60) {
+          const hours = Math.floor(elapsedMinutes / 60);
+          return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+        }
+        const minutes = Math.max(elapsedMinutes, 1);
+        return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+      })()
     : null;
 
   return (
@@ -96,17 +109,18 @@ export default function MapPage() {
       )}
       <FlightMap
         flights={flights}
-        onRefresh={handleRefresh}
         onPanelToggle={() => setPanelOpen((open) => !open)}
         panelOpen={panelOpen}
-        loading={loading || refreshing}
-        lastUpdatedText={lastUpdatedText}
+        geolocateRequest={geolocateRequest}
         selectedFlight={selectedFlight}
         onFlightSelect={setSelectedFlight}
       />
 
       {panelOpen && (
-        <aside className="absolute bottom-20 left-3 right-3 z-20 max-h-[65vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur md:bottom-5 md:left-4 md:right-auto md:w-[360px] md:max-h-[70vh]">
+        <aside
+          className="absolute bottom-20 right-3 z-20 max-h-[65vh] w-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur md:bottom-5 md:right-4 md:w-[360px] md:max-h-[70vh]"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
+        >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">Flight Tracker</h2>
             <div className="flex items-center gap-2">
@@ -119,6 +133,59 @@ export default function MapPage() {
               >
                 Hide
               </button>
+            </div>
+          </div>
+
+          <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRefresh}
+                disabled={loading || refreshing}
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                title="Refresh flight data"
+              >
+                <svg
+                  className={`h-5 w-5 ${(loading || refreshing) ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setGeolocateRequest((value) => value + 1)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
+                title="Go to my location"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+              <div className="text-xs font-medium text-slate-600">
+                {lastUpdatedText ? `Updated ${lastUpdatedText}` : 'No updates yet'}
+              </div>
             </div>
           </div>
 

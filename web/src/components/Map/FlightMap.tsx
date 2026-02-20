@@ -16,22 +16,18 @@ import MapControls from './MapControls';
 
 interface FlightMapProps {
   flights: LiveFlight[];
-  onRefresh: () => Promise<unknown> | void;
   onPanelToggle: () => void;
   panelOpen: boolean;
-  loading: boolean;
-  lastUpdatedText?: string | null;
+  geolocateRequest: number;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
 }
 
 export default function FlightMap({ 
   flights, 
-  onRefresh, 
   onPanelToggle,
   panelOpen,
-  loading,
-  lastUpdatedText,
+  geolocateRequest,
   selectedFlight,
   onFlightSelect 
 }: FlightMapProps) {
@@ -135,7 +131,6 @@ export default function FlightMap({
     vectorSource.current.addFeatures(features);
   }, [flights]);
 
-  // Center on user location
   const handleGeolocate = () => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -158,16 +153,18 @@ export default function FlightMap({
     }
   };
 
+  useEffect(() => {
+    if (geolocateRequest > 0) {
+      handleGeolocate();
+    }
+  }, [geolocateRequest]);
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
       <MapControls
-        onRefresh={onRefresh}
-        onGeolocate={handleGeolocate}
         onPanelToggle={onPanelToggle}
         panelOpen={panelOpen}
-        loading={loading}
-        lastUpdatedText={lastUpdatedText}
       />
       {selectedFlight && (
         <FlightInfoPanel
