@@ -124,7 +124,13 @@ module Types
         "OpenSky API rate limit exceeded and no cached flights are available right now."
     rescue OpenskyClient::ApiError => api_error
       begin
-        cached_live_flights(bounding_box: bounding_box)
+        cached_flights = cached_live_flights(bounding_box: bounding_box)
+        return cached_flights if cached_flights.any?
+
+        raise GraphQL::ExecutionError,
+          "#{api_error.message}; no cached flights are available right now."
+      rescue GraphQL::ExecutionError
+        raise
       rescue StandardError => fallback_error
         raise GraphQL::ExecutionError, "#{api_error.message}; cached fallback failed: #{fallback_error.message}"
       end

@@ -113,4 +113,28 @@ RSpec.describe 'LiveFlights query', type: :request do
       )
     )
   end
+
+  it 'returns a GraphQL error when OpenSky has an API error and cache is empty' do
+    client = instance_double(OpenskyClient)
+    allow(client).to receive(:fetch_states).and_raise(OpenskyClient::ApiError, 'OpenSky API unavailable')
+    allow(OpenskyClient).to receive(:new).and_return(client)
+
+    post '/graphql', params: { query: <<~GRAPHQL }
+      query {
+        liveFlights {
+          icao24
+        }
+      }
+    GRAPHQL
+
+    expect(response).to have_http_status(:ok)
+
+    body = JSON.parse(response.body)
+    expect(body.dig('data', 'liveFlights')).to be_nil
+    expect(body['errors']).to include(
+      a_hash_including(
+        'message' => 'OpenSky API unavailable; no cached flights are available right now.'
+      )
+    )
+  end
 end
