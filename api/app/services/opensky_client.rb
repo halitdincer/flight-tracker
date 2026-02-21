@@ -22,7 +22,7 @@ class OpenskyClient
   # @param lomax [Float] Upper longitude bound
   # @return [Array<Hash>] Array of flight state hashes
   def fetch_states(lamin: nil, lomin: nil, lamax: nil, lomax: nil)
-    params = {}
+    params = { extended: 1 }
     if lamin && lomin && lamax && lomax
       params[:lamin] = lamin
       params[:lomin] = lomin
