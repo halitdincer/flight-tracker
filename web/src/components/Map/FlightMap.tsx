@@ -65,12 +65,15 @@ export default function FlightMap({
       style: (feature, resolution) => {
         const heading = feature.get('heading') || 0;
         const icao24 = feature.get('icao24');
+        const callsign = feature.get('callsign') as string | null;
         const onGround = feature.get('onGround');
         const category = feature.get('category') as number | null;
 
         // Surface vehicles: category 14-18 (surface emergency, service, ground obstruction, etc.)
         const isSurfaceVehicle =
           category != null && category >= 14 && category <= 18;
+        const isCallsignVehicle = isLikelyVehicleCallsign(callsign);
+        const isGroundVehicle = onGround && (isSurfaceVehicle || isCallsignVehicle);
 
         // Hide ground items only when far zoomed out (resolution < 120 ≈ zoom 11+)
         if (onGround && resolution > 120) {
@@ -83,7 +86,7 @@ export default function FlightMap({
         let iconSrc: string;
         let scale: number;
 
-        if (isSurfaceVehicle) {
+        if (isGroundVehicle) {
           iconSrc = isHighlighted ? '/vehicle-selected.svg' : '/vehicle.svg';
           scale = 0.35;
         } else if (onGround) {
@@ -276,6 +279,14 @@ function isSurfaceVehicleCategory(category: number | null): boolean {
   return category != null && category >= 14 && category <= 18;
 }
 
+function isLikelyVehicleCallsign(callsign: string | null | undefined): boolean {
+  if (!callsign) return false;
+
+  const normalized = callsign.trim().toUpperCase();
+  // Common airport surface vehicle prefixes
+  return /^(BUS|TR|TUG|PUSH|FUEL|FOLLOW|OPS|SVC|RAMP|GSE|FIRE|RESCUE|RSC|CAR|VAN)\b/.test(normalized);
+}
+
 function categoryLabel(category: number | null): string {
   if (category == null) return 'Unknown';
 
@@ -308,9 +319,10 @@ function FlightInfoPanel({ flight, onClose }: FlightInfoPanelProps) {
   if (!flight) return null;
 
   const isSurfaceVehicle = isSurfaceVehicleCategory(flight.category);
+  const isCallsignVehicle = isLikelyVehicleCallsign(flight.callsign);
   const statusLabel = !flight.onGround
     ? 'Airborne'
-    : isSurfaceVehicle
+    : isSurfaceVehicle || isCallsignVehicle
       ? 'Surface Vehicle'
       : 'Grounded Aircraft';
 
