@@ -62,10 +62,16 @@ export default function FlightMap({
 
     const vectorLayer = new VectorLayer({
       source: vectorSource.current,
-      style: (feature) => {
+      style: (feature, resolution) => {
         const heading = feature.get('heading') || 0;
         const icao24 = feature.get('icao24');
         const onGround = feature.get('onGround');
+
+        // Hide ground vehicles unless zoomed in close (resolution < 20 ≈ zoom 14+)
+        if (onGround && resolution > 20) {
+          return new Style({});
+        }
+
         const isHighlighted =
           icao24 === selectedRef.current || icao24 === hoveredIcao.current;
         const iconSrc = onGround
