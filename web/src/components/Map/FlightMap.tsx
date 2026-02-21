@@ -252,12 +252,12 @@ export default function FlightMap({
     // Keep only the most recent track window to avoid stale jumps/teleports.
     const newestTs = new Date(ordered[ordered.length - 1].recordedAt).getTime();
     const recent = ordered.filter(
-      (p) => new Date(p.recordedAt).getTime() >= newestTs - 2 * 60 * 60 * 1000
+      (p) => new Date(p.recordedAt).getTime() >= newestTs - 12 * 60 * 60 * 1000
     );
 
     if (recent.length < 2) return;
 
-    // Build segments and break line on suspicious jumps / long time gaps.
+    // Build segments and break only on impossible jumps.
     const segments: Array<Array<[number, number]>> = [];
     let currentSegment: Array<[number, number]> = [];
 
@@ -282,10 +282,10 @@ export default function FlightMap({
           new Date(prev.recordedAt).getTime()) /
         60000;
 
-      const hasBigJump = distanceKm > 250;
-      const hasLargeGap = deltaMinutes > 45;
+      const speedKmh = deltaMinutes > 0 ? distanceKm / (deltaMinutes / 60) : Infinity;
+      const hasImpossibleJump = distanceKm > 120 && speedKmh > 1200;
 
-      if (hasBigJump || hasLargeGap) {
+      if (hasImpossibleJump) {
         if (currentSegment.length >= 2) {
           segments.push(currentSegment);
         }
