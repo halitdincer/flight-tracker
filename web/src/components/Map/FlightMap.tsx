@@ -75,8 +75,8 @@ export default function FlightMap({
         const isCallsignVehicle = isLikelyVehicleCallsign(callsign);
         const isGroundVehicle = onGround && (isSurfaceVehicle || isCallsignVehicle);
 
-        // Hide ground items only when far zoomed out (resolution < 120 ≈ zoom 11+)
-        if (onGround && resolution > 120) {
+        // Hide ground items only when very far zoomed out (resolution < 180 ≈ zoom 10+)
+        if (onGround && resolution > 180) {
           return new Style({});
         }
 
@@ -88,7 +88,7 @@ export default function FlightMap({
 
         if (isGroundVehicle) {
           iconSrc = isHighlighted ? '/vehicle-selected.svg' : '/vehicle.svg';
-          scale = 0.35;
+          scale = 0.25;
         } else if (onGround) {
           iconSrc = isHighlighted ? '/plane-selected.svg' : '/plane-ground.svg';
           scale = 0.45;
