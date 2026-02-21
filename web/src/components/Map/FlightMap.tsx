@@ -40,6 +40,8 @@ export default function FlightMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
   const vectorSource = useRef<VectorSource>(new VectorSource());
+  const vectorLayerRef = useRef<VectorLayer | null>(null);
+  const hoveredIcao = useRef<string | null>(null);
   const [, setUserLocation] = useState<[number, number] | null>(null);
 
   // Initialize map
@@ -50,16 +52,18 @@ export default function FlightMap({
       source: vectorSource.current,
       style: (feature) => {
         const heading = feature.get('heading') || 0;
-        const isSelected = feature.get('icao24') === selectedFlight;
+        const icao24 = feature.get('icao24');
+        const isHighlighted = icao24 === selectedFlight || icao24 === hoveredIcao.current;
         return new Style({
           image: new Icon({
-            src: isSelected ? '/plane-selected.svg' : '/plane.svg',
-            scale: isSelected ? 0.35 : 0.25,
+            src: isHighlighted ? '/plane-selected.svg' : '/plane.svg',
+            scale: isHighlighted ? 0.35 : 0.25,
             rotation: (heading * Math.PI) / 180,
           }),
         });
       },
     });
+    vectorLayerRef.current = vectorLayer;
 
     mapInstance.current = new Map({
       target: mapRef.current,
@@ -97,14 +101,19 @@ export default function FlightMap({
       }
     });
 
-    // Pointer cursor on hover
+    // Pointer cursor + hover highlight
     mapInstance.current.on('pointermove', (event) => {
-      const hit = mapInstance.current?.forEachFeatureAtPixel(
+      const feature = mapInstance.current?.forEachFeatureAtPixel(
         event.pixel,
-        () => true
+        (f) => f
       );
+      const newHovered = feature ? (feature.get('icao24') as string) : null;
       if (mapRef.current) {
-        mapRef.current.style.cursor = hit ? 'pointer' : '';
+        mapRef.current.style.cursor = newHovered ? 'pointer' : '';
+      }
+      if (newHovered !== hoveredIcao.current) {
+        hoveredIcao.current = newHovered;
+        vectorLayerRef.current?.changed();
       }
     });
 
