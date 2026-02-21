@@ -150,7 +150,8 @@ class OpenskyClient
         geo_altitude: state[13],
         squawk: state[14],
         spi: state[15],
-        position_source: state[16]
+        position_source: state[16],
+        category: state[17]
       }
     end.compact
   end

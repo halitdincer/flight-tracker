@@ -12,5 +12,6 @@ module Types
     field :heading, Float
     field :vertical_rate, Float
     field :on_ground, Boolean, null: false
+    field :category, Integer
   end
 end

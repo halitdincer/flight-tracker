@@ -30,4 +30,5 @@ export interface LiveFlight {
   velocity: number | null;
   heading: number | null;
   onGround: boolean;
+  category: number | null;
 }

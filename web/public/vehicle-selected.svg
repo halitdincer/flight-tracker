@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120">
-  <!-- Top-down airport ground vehicle, pointing north (up) — selected state -->
+  <!-- Top-down airport ground vehicle, pointing north (up) — hover/selected (pastel red) -->
   <!-- Cab (front/top section) -->
   <rect x="16" y="8" width="48" height="38" rx="8" ry="8" fill="#FF8A80" stroke="#000" stroke-width="2.5"/>
   <!-- Windshield -->

@@ -13,6 +13,7 @@ export const GET_LIVE_FLIGHTS = gql`
       heading
       verticalRate
       onGround
+      category
     }
   }
 `;

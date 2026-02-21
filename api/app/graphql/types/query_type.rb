@@ -113,7 +113,8 @@ module Types
           velocity: state[:velocity],
           heading: state[:true_track],
           vertical_rate: state[:vertical_rate],
-          on_ground: state[:on_ground] || false
+          on_ground: state[:on_ground] || false,
+          category: state[:category]
         }
       end
     rescue OpenskyClient::RateLimitError

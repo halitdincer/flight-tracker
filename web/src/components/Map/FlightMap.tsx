@@ -66,25 +66,38 @@ export default function FlightMap({
         const heading = feature.get('heading') || 0;
         const icao24 = feature.get('icao24');
         const onGround = feature.get('onGround');
+        const category = feature.get('category') as number | null;
 
-        // Hide ground vehicles unless zoomed in close (resolution < 20 ≈ zoom 14+)
+        // Surface vehicles: category 14-18 (surface emergency, service, ground obstruction, etc.)
+        const isSurfaceVehicle =
+          category != null && category >= 14 && category <= 18;
+
+        // Hide ground items unless zoomed in close (resolution < 20 ≈ zoom 14+)
         if (onGround && resolution > 20) {
           return new Style({});
         }
 
         const isHighlighted =
           icao24 === selectedRef.current || icao24 === hoveredIcao.current;
-        const iconSrc = onGround
-          ? isHighlighted
-            ? '/vehicle-selected.svg'
-            : '/vehicle.svg'
-          : isHighlighted
-            ? '/plane-selected.svg'
-            : '/plane.svg';
+
+        let iconSrc: string;
+        let scale: number;
+
+        if (isSurfaceVehicle) {
+          iconSrc = isHighlighted ? '/vehicle-selected.svg' : '/vehicle.svg';
+          scale = 0.35;
+        } else if (onGround) {
+          iconSrc = isHighlighted ? '/plane-selected.svg' : '/plane-ground.svg';
+          scale = 0.45;
+        } else {
+          iconSrc = isHighlighted ? '/plane-selected.svg' : '/plane.svg';
+          scale = 0.45;
+        }
+
         return new Style({
           image: new Icon({
             src: iconSrc,
-            scale: onGround ? 0.35 : 0.45,
+            scale,
             rotation: (heading * Math.PI) / 180,
           }),
         });
@@ -195,6 +208,7 @@ export default function FlightMap({
           velocity: flight.velocity,
           originCountry: flight.originCountry,
           onGround: flight.onGround,
+          category: flight.category,
         });
         return feature;
       });
