@@ -49,14 +49,12 @@ export default function FlightMap({
   const tooltipOverlay = useRef<Overlay | null>(null);
   const [, setUserLocation] = useState<[number, number] | null>(null);
 
-  // Keep refs in sync with props
-  selectedRef.current = selectedFlight;
-  onFlightSelectRef.current = onFlightSelect;
-
-  // Re-render vector layer when selectedFlight changes
+  // Keep refs in sync with props and re-render vector layer when selection changes
   useEffect(() => {
+    selectedRef.current = selectedFlight;
+    onFlightSelectRef.current = onFlightSelect;
     vectorLayerRef.current?.changed();
-  }, [selectedFlight]);
+  }, [selectedFlight, onFlightSelect]);
 
   // Initialize map
   useEffect(() => {
