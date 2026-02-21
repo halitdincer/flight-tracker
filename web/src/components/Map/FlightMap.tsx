@@ -257,7 +257,7 @@ export default function FlightMap({
 
     if (recent.length < 2) return;
 
-    // Build segments and break only on impossible jumps.
+    // Build segments and break on suspicious jumps / world-wrap boundaries.
     const segments: Array<Array<[number, number]>> = [];
     let currentSegment: Array<[number, number]> = [];
 
@@ -277,6 +277,7 @@ export default function FlightMap({
         point.latitude,
         point.longitude
       );
+      const rawLonDelta = Math.abs(point.longitude - prev.longitude);
       const deltaMinutes =
         (new Date(point.recordedAt).getTime() -
           new Date(prev.recordedAt).getTime()) /
@@ -284,8 +285,10 @@ export default function FlightMap({
 
       const speedKmh = deltaMinutes > 0 ? distanceKm / (deltaMinutes / 60) : Infinity;
       const hasImpossibleJump = distanceKm > 120 && speedKmh > 1200;
+      const hasLargeGap = deltaMinutes > 120;
+      const crossesDateline = rawLonDelta > 180;
 
-      if (hasImpossibleJump) {
+      if (hasImpossibleJump || hasLargeGap || crossesDateline) {
         if (currentSegment.length >= 2) {
           segments.push(currentSegment);
         }
