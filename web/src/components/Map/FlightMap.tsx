@@ -53,8 +53,8 @@ export default function FlightMap({
         const isSelected = feature.get('icao24') === selectedFlight;
         return new Style({
           image: new Icon({
-            src: '/plane.png',
-            scale: isSelected ? 0.55 : 0.35,
+            src: isSelected ? '/plane-selected.svg' : '/plane.svg',
+            scale: isSelected ? 0.35 : 0.25,
             rotation: (heading * Math.PI) / 180,
           }),
         });
