@@ -240,17 +240,71 @@ export default function FlightMap({
 
     if (!selectedFlight || trackPositions.length < 2) return;
 
-    const trackCoords = trackPositions
+    const ordered = [...trackPositions]
       .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
-      .map((p) => fromLonLat([p.longitude, p.latitude]));
+      .sort(
+        (a, b) =>
+          new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
+      );
 
-    if (trackCoords.length < 2) return;
+    if (ordered.length < 2) return;
 
-    const trackFeature = new Feature({
-      geometry: new LineString(trackCoords),
+    // Keep only the most recent track window to avoid stale jumps/teleports.
+    const newestTs = new Date(ordered[ordered.length - 1].recordedAt).getTime();
+    const recent = ordered.filter(
+      (p) => new Date(p.recordedAt).getTime() >= newestTs - 2 * 60 * 60 * 1000
+    );
+
+    if (recent.length < 2) return;
+
+    // Build segments and break line on suspicious jumps / long time gaps.
+    const segments: Array<Array<[number, number]>> = [];
+    let currentSegment: Array<[number, number]> = [];
+
+    for (let i = 0; i < recent.length; i += 1) {
+      const point = recent[i];
+      const coords: [number, number] = [point.longitude, point.latitude];
+
+      if (i === 0) {
+        currentSegment.push(coords);
+        continue;
+      }
+
+      const prev = recent[i - 1];
+      const distanceKm = haversineKm(
+        prev.latitude,
+        prev.longitude,
+        point.latitude,
+        point.longitude
+      );
+      const deltaMinutes =
+        (new Date(point.recordedAt).getTime() -
+          new Date(prev.recordedAt).getTime()) /
+        60000;
+
+      const hasBigJump = distanceKm > 250;
+      const hasLargeGap = deltaMinutes > 45;
+
+      if (hasBigJump || hasLargeGap) {
+        if (currentSegment.length >= 2) {
+          segments.push(currentSegment);
+        }
+        currentSegment = [coords];
+      } else {
+        currentSegment.push(coords);
+      }
+    }
+
+    if (currentSegment.length >= 2) {
+      segments.push(currentSegment);
+    }
+
+    segments.forEach((segment) => {
+      const feature = new Feature({
+        geometry: new LineString(segment.map(([lon, lat]) => fromLonLat([lon, lat]))),
+      });
+      trackSource.current.addFeature(feature);
     });
-
-    trackSource.current.addFeature(trackFeature);
   }, [selectedFlight, trackPositions]);
 
   // Geolocation
@@ -311,6 +365,20 @@ interface FlightInfoPanelProps {
 
 function isSurfaceVehicleCategory(category: number | null): boolean {
   return category != null && category >= 14 && category <= 18;
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  let dLonDeg = lon2 - lon1;
+  if (dLonDeg > 180) dLonDeg -= 360;
+  if (dLonDeg < -180) dLonDeg += 360;
+  const dLon = toRad(dLonDeg);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function isLikelyVehicleCallsign(callsign: string | null | undefined): boolean {
