@@ -65,6 +65,7 @@ export default function FlightMap({
       target: mapRef.current,
       layers: [
         new TileLayer({
+          className: 'ol-layer-darkened',
           source: new XYZ({
             url: 'https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
             attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -166,7 +167,7 @@ export default function FlightMap({
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapRef} className="w-full h-full brightness-[0.70]" />
+      <div ref={mapRef} className="w-full h-full" />
       <MapControls
         panelOpen={panelOpen}
         onPanelToggle={onPanelToggle}
