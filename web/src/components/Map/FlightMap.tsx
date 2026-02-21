@@ -70,7 +70,7 @@ export default function FlightMap({
         return new Style({
           image: new Icon({
             src: isHighlighted ? '/plane-selected.svg' : '/plane.svg',
-            scale: 0.25,
+            scale: 0.35,
             rotation: (heading * Math.PI) / 180,
           }),
         });
