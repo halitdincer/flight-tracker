@@ -96,10 +96,8 @@ interface FlightHistoryData {
 }
 
 export function useFlightHistory(icao24: string | null) {
-  const startTime = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-
   const { data, loading, error } = useQuery<FlightHistoryData>(GET_FLIGHT_HISTORY, {
-    variables: { icao24, startTime },
+    variables: { icao24 },
     skip: !icao24,
     fetchPolicy: 'network-only',
   });
