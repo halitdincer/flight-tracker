@@ -12,13 +12,14 @@ RSpec.describe OpenskyClient do
           'time' => 1609459200,
           'states' => [
             [ 'abc123', 'UAL123  ', 'United States', 1609459200, 1609459200,
-             -122.4194, 37.7749, 10000.0, false, 250.5, 180.0, 5.0, nil, 10500.0, '1234', false, 0 ]
+             -122.4194, 37.7749, 10000.0, false, 250.5, 180.0, 5.0, nil, 10500.0, '1234', false, 0, 1 ]
           ]
         }
       end
 
       before do
         stub_request(:get, 'https://opensky-network.org/api/states/all')
+          .with(query: hash_including('extended' => '1'))
           .to_return(status: 200, body: mock_response.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
@@ -28,12 +29,14 @@ RSpec.describe OpenskyClient do
         expect(states.first[:icao24]).to eq('abc123')
         expect(states.first[:callsign]).to eq('UAL123')
         expect(states.first[:latitude]).to eq(37.7749)
+        expect(states.first[:category]).to eq(1)
       end
     end
 
     context 'when API returns rate limit error' do
       before do
         stub_request(:get, 'https://opensky-network.org/api/states/all')
+          .with(query: hash_including('extended' => '1'))
           .to_return(status: 429)
       end
 
@@ -50,7 +53,7 @@ RSpec.describe OpenskyClient do
           'time' => 1609459200,
           'states' => [
             [ 'abc123', 'UAL123  ', 'United States', 1609459200, 1609459200,
-             -122.4194, 37.7749, 10000.0, false, 250.5, 180.0, 5.0, nil, 10500.0, '1234', false, 0 ]
+             -122.4194, 37.7749, 10000.0, false, 250.5, 180.0, 5.0, nil, 10500.0, '1234', false, 0, 1 ]
           ]
         }
       end
@@ -66,7 +69,7 @@ RSpec.describe OpenskyClient do
             headers: { 'Content-Type' => 'application/json' })
 
         stub_request(:get, 'https://opensky-network.org/api/states/all')
-          .with(headers: { 'Authorization' => 'Bearer token-1' })
+          .with(query: hash_including('extended' => '1'), headers: { 'Authorization' => 'Bearer token-1' })
           .to_return(status: 200, body: mock_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
         states = client.fetch_states
@@ -86,11 +89,11 @@ RSpec.describe OpenskyClient do
           )
 
         stub_request(:get, 'https://opensky-network.org/api/states/all')
-          .with(headers: { 'Authorization' => 'Bearer token-1' })
+          .with(query: hash_including('extended' => '1'), headers: { 'Authorization' => 'Bearer token-1' })
           .to_return(status: 200, body: mock_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
         stub_request(:get, 'https://opensky-network.org/api/states/all')
-          .with(headers: { 'Authorization' => 'Bearer token-2' })
+          .with(query: hash_including('extended' => '1'), headers: { 'Authorization' => 'Bearer token-2' })
           .to_return(status: 200, body: mock_response.to_json, headers: { 'Content-Type' => 'application/json' })
 
         client.fetch_states
