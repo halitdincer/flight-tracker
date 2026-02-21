@@ -72,8 +72,8 @@ export default function FlightMap({
         const isSurfaceVehicle =
           category != null && category >= 14 && category <= 18;
 
-        // Hide ground items unless moderately zoomed in (resolution < 40 ≈ zoom 13+)
-        if (onGround && resolution > 40) {
+        // Hide ground items only when far zoomed out (resolution < 120 ≈ zoom 11+)
+        if (onGround && resolution > 120) {
           return new Style({});
         }
 
@@ -280,7 +280,7 @@ function categoryLabel(category: number | null): string {
   if (category == null) return 'Unknown';
 
   const labels: Record<number, string> = {
-    0: 'No Info',
+    0: 'No Info (OpenSky)',
     1: 'Light Aircraft',
     2: 'Small Aircraft',
     3: 'Large Aircraft',
