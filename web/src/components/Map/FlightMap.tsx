@@ -54,7 +54,7 @@ export default function FlightMap({
         return new Style({
           image: new Icon({
             src: '/plane.png',
-            scale: isSelected ? 0.08 : 0.05,
+            scale: isSelected ? 0.55 : 0.35,
             rotation: (heading * Math.PI) / 180,
           }),
         });
