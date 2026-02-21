@@ -51,7 +51,7 @@ export default function FlightDetailPage() {
           image: new Icon({
             src: '/plane.png',
             scale: 0.06,
-            rotation: (heading * Math.PI) / 180 + Math.PI,
+            rotation: (heading * Math.PI) / 180,
           }),
         });
       },

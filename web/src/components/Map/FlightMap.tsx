@@ -71,7 +71,7 @@ export default function FlightMap({
           image: new Icon({
             src: isHighlighted ? '/plane-selected.svg' : '/plane.svg',
             scale: 0.45,
-            rotation: (heading * Math.PI) / 180 + Math.PI,
+            rotation: (heading * Math.PI) / 180,
           }),
         });
       },
