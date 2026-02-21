@@ -7,6 +7,7 @@ import VectorSource from 'ol/source/Vector';
 import XYZ from 'ol/source/XYZ';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
+import Overlay from 'ol/Overlay';
 import { fromLonLat } from 'ol/proj';
 import { Style, Icon } from 'ol/style';
 import { defaults as defaultControls } from 'ol/control';
@@ -38,11 +39,24 @@ export default function FlightMap({
   onFlightSelect,
 }: FlightMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
   const vectorSource = useRef<VectorSource>(new VectorSource());
   const vectorLayerRef = useRef<VectorLayer | null>(null);
   const hoveredIcao = useRef<string | null>(null);
+  const selectedRef = useRef<string | null | undefined>(selectedFlight);
+  const onFlightSelectRef = useRef(onFlightSelect);
+  const tooltipOverlay = useRef<Overlay | null>(null);
   const [, setUserLocation] = useState<[number, number] | null>(null);
+
+  // Keep refs in sync with props
+  selectedRef.current = selectedFlight;
+  onFlightSelectRef.current = onFlightSelect;
+
+  // Re-render vector layer when selectedFlight changes
+  useEffect(() => {
+    vectorLayerRef.current?.changed();
+  }, [selectedFlight]);
 
   // Initialize map
   useEffect(() => {
@@ -53,17 +67,27 @@ export default function FlightMap({
       style: (feature) => {
         const heading = feature.get('heading') || 0;
         const icao24 = feature.get('icao24');
-        const isHighlighted = icao24 === selectedFlight || icao24 === hoveredIcao.current;
+        const isHighlighted =
+          icao24 === selectedRef.current || icao24 === hoveredIcao.current;
         return new Style({
           image: new Icon({
             src: isHighlighted ? '/plane-selected.svg' : '/plane.svg',
-            scale: isHighlighted ? 0.35 : 0.25,
+            scale: 0.25,
             rotation: (heading * Math.PI) / 180,
           }),
         });
       },
     });
     vectorLayerRef.current = vectorLayer;
+
+    // Tooltip overlay
+    const overlay = new Overlay({
+      element: tooltipRef.current!,
+      positioning: 'bottom-center',
+      offset: [0, -12],
+      stopEvent: false,
+    });
+    tooltipOverlay.current = overlay;
 
     mapInstance.current = new Map({
       target: mapRef.current,
@@ -72,11 +96,13 @@ export default function FlightMap({
           className: 'ol-layer-darkened',
           source: new XYZ({
             url: 'https://{a-d}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-            attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            attributions:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
           }),
         }),
         vectorLayer,
       ],
+      overlays: [overlay],
       view: new View({
         center: fromLonLat([0, 20]),
         zoom: 3,
@@ -94,26 +120,40 @@ export default function FlightMap({
         event.pixel,
         (f) => f
       );
-      if (feature && onFlightSelect) {
-        onFlightSelect(feature.get('icao24'));
-      } else if (onFlightSelect) {
-        onFlightSelect(null);
+      if (feature && onFlightSelectRef.current) {
+        onFlightSelectRef.current(feature.get('icao24'));
+      } else if (onFlightSelectRef.current) {
+        onFlightSelectRef.current(null);
       }
     });
 
-    // Pointer cursor + hover highlight
+    // Pointer cursor + hover highlight + tooltip
     mapInstance.current.on('pointermove', (event) => {
       const feature = mapInstance.current?.forEachFeatureAtPixel(
         event.pixel,
         (f) => f
-      );
+      ) as Feature | undefined;
       const newHovered = feature ? (feature.get('icao24') as string) : null;
+
       if (mapRef.current) {
         mapRef.current.style.cursor = newHovered ? 'pointer' : '';
       }
+
       if (newHovered !== hoveredIcao.current) {
         hoveredIcao.current = newHovered;
         vectorLayerRef.current?.changed();
+      }
+
+      // Tooltip
+      if (feature && tooltipRef.current) {
+        const callsign = feature.get('callsign') || feature.get('icao24');
+        tooltipRef.current.textContent = callsign;
+        tooltipRef.current.style.display = 'block';
+        const geom = feature.getGeometry() as Point;
+        tooltipOverlay.current?.setPosition(geom.getCoordinates());
+      } else if (tooltipRef.current) {
+        tooltipRef.current.style.display = 'none';
+        tooltipOverlay.current?.setPosition(undefined);
       }
     });
 
@@ -177,6 +217,12 @@ export default function FlightMap({
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
+      {/* Tooltip element for OpenLayers Overlay */}
+      <div
+        ref={tooltipRef}
+        className="rounded bg-black/80 px-2 py-1 text-xs font-medium text-white whitespace-nowrap pointer-events-none"
+        style={{ display: 'none' }}
+      />
       <MapControls
         panelOpen={panelOpen}
         onPanelToggle={onPanelToggle}
@@ -216,29 +262,53 @@ function FlightInfoPanel({ flight, onClose }: FlightInfoPanelProps) {
           onClick={onClose}
           className="ml-2 flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:text-slate-700"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
       <div className="space-y-1 text-sm">
-        <p><span className="text-slate-400">ICAO24:</span> <span className="text-slate-700">{flight.icao24}</span></p>
-        <p><span className="text-slate-400">Country:</span> <span className="text-slate-700">{flight.originCountry}</span></p>
+        <p>
+          <span className="text-slate-400">ICAO24:</span>{' '}
+          <span className="text-slate-700">{flight.icao24}</span>
+        </p>
+        <p>
+          <span className="text-slate-400">Country:</span>{' '}
+          <span className="text-slate-700">{flight.originCountry}</span>
+        </p>
         <p>
           <span className="text-slate-400">Altitude:</span>{' '}
-          <span className="text-slate-700">{flight.altitude ? `${Math.round(flight.altitude)}m` : 'N/A'}</span>
+          <span className="text-slate-700">
+            {flight.altitude ? `${Math.round(flight.altitude)}m` : 'N/A'}
+          </span>
         </p>
         <p>
           <span className="text-slate-400">Speed:</span>{' '}
-          <span className="text-slate-700">{flight.velocity ? `${Math.round(flight.velocity)} m/s` : 'N/A'}</span>
+          <span className="text-slate-700">
+            {flight.velocity ? `${Math.round(flight.velocity)} m/s` : 'N/A'}
+          </span>
         </p>
         <p>
           <span className="text-slate-400">Heading:</span>{' '}
-          <span className="text-slate-700">{flight.heading ? `${Math.round(flight.heading)}deg` : 'N/A'}</span>
+          <span className="text-slate-700">
+            {flight.heading ? `${Math.round(flight.heading)}deg` : 'N/A'}
+          </span>
         </p>
         <p>
           <span className="text-slate-400">Status:</span>{' '}
-          <span className="text-slate-700">{flight.onGround ? 'On Ground' : 'Airborne'}</span>
+          <span className="text-slate-700">
+            {flight.onGround ? 'On Ground' : 'Airborne'}
+          </span>
         </p>
       </div>
     </div>
