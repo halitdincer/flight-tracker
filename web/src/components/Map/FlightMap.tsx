@@ -166,7 +166,7 @@ export default function FlightMap({
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapRef} className="w-full h-full" />
+      <div ref={mapRef} className="w-full h-full brightness-[0.92]" />
       <MapControls
         panelOpen={panelOpen}
         onPanelToggle={onPanelToggle}
