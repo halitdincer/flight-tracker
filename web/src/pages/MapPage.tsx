@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FlightMap } from '../components/Map';
-import { useLiveFlights } from '../hooks/useFlights';
+import { useFlightHistory, useLiveFlights } from '../hooks/useFlights';
 
 const RATE_LIMIT_WARNING =
   'OpenSky rate limit reached. No cached flights are available right now.';
@@ -17,6 +17,7 @@ export default function MapPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const { flights, loading, error, refetch } = useLiveFlights();
+  const { positions: selectedFlightTrack } = useFlightHistory(selectedFlight);
 
   useEffect(() => {
     if (!loading && !error) {
@@ -101,6 +102,7 @@ export default function MapPage() {
         geolocateRequest={geolocateRequest}
         selectedFlight={selectedFlight}
         onFlightSelect={setSelectedFlight}
+        trackPositions={selectedFlightTrack}
       />
 
       {/* Last updated — bottom left */}

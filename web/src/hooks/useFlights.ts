@@ -1,6 +1,11 @@
 import { useQuery } from '@apollo/client/react';
-import { GET_LIVE_FLIGHTS, GET_FLIGHTS, GET_FLIGHT } from '../graphql/queries/flights';
-import type { LiveFlight, Flight } from '../types/flight';
+import {
+  GET_LIVE_FLIGHTS,
+  GET_FLIGHTS,
+  GET_FLIGHT,
+  GET_FLIGHT_HISTORY,
+} from '../graphql/queries/flights';
+import type { LiveFlight, Flight, FlightPosition } from '../types/flight';
 
 interface LiveFlightsData {
   liveFlights: LiveFlight[];
@@ -81,6 +86,26 @@ export function useFlight(icao24: string) {
 
   return {
     flight: data?.flight ?? null,
+    loading,
+    error,
+  };
+}
+
+interface FlightHistoryData {
+  flightHistory: FlightPosition[];
+}
+
+export function useFlightHistory(icao24: string | null) {
+  const startTime = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+
+  const { data, loading, error } = useQuery<FlightHistoryData>(GET_FLIGHT_HISTORY, {
+    variables: { icao24, startTime },
+    skip: !icao24,
+    fetchPolicy: 'network-only',
+  });
+
+  return {
+    positions: data?.flightHistory ?? [],
     loading,
     error,
   };

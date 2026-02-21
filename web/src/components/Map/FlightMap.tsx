@@ -7,12 +7,13 @@ import VectorSource from 'ol/source/Vector';
 import XYZ from 'ol/source/XYZ';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
+import LineString from 'ol/geom/LineString';
 import Overlay from 'ol/Overlay';
 import { fromLonLat } from 'ol/proj';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Stroke } from 'ol/style';
 import { defaults as defaultControls } from 'ol/control';
 import 'ol/ol.css';
-import type { LiveFlight } from '../../types/flight';
+import type { LiveFlight, FlightPosition } from '../../types/flight';
 import MapControls from './MapControls';
 
 interface FlightMapProps {
@@ -25,6 +26,7 @@ interface FlightMapProps {
   geolocateRequest: number;
   selectedFlight?: string | null;
   onFlightSelect?: (icao24: string | null) => void;
+  trackPositions?: FlightPosition[];
 }
 
 export default function FlightMap({
@@ -37,11 +39,13 @@ export default function FlightMap({
   geolocateRequest,
   selectedFlight,
   onFlightSelect,
+  trackPositions = [],
 }: FlightMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
   const vectorSource = useRef<VectorSource>(new VectorSource());
+  const trackSource = useRef<VectorSource>(new VectorSource());
   const vectorLayerRef = useRef<VectorLayer | null>(null);
   const hoveredIcao = useRef<string | null>(null);
   const selectedRef = useRef<string | null | undefined>(selectedFlight);
@@ -108,6 +112,16 @@ export default function FlightMap({
     });
     vectorLayerRef.current = vectorLayer;
 
+    const trackLayer = new VectorLayer({
+      source: trackSource.current,
+      style: new Style({
+        stroke: new Stroke({
+          color: '#FF8A80',
+          width: 2.5,
+        }),
+      }),
+    });
+
     // Tooltip overlay
     const overlay = new Overlay({
       element: tooltipRef.current!,
@@ -128,6 +142,7 @@ export default function FlightMap({
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
           }),
         }),
+        trackLayer,
         vectorLayer,
       ],
       overlays: [overlay],
@@ -218,6 +233,25 @@ export default function FlightMap({
 
     vectorSource.current.addFeatures(features);
   }, [flights]);
+
+  // Update selected flight track line
+  useEffect(() => {
+    trackSource.current.clear();
+
+    if (!selectedFlight || trackPositions.length < 2) return;
+
+    const trackCoords = trackPositions
+      .filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
+      .map((p) => fromLonLat([p.longitude, p.latitude]));
+
+    if (trackCoords.length < 2) return;
+
+    const trackFeature = new Feature({
+      geometry: new LineString(trackCoords),
+    });
+
+    trackSource.current.addFeature(trackFeature);
+  }, [selectedFlight, trackPositions]);
 
   // Geolocation
   useEffect(() => {
