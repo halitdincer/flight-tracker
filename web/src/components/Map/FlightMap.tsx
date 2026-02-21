@@ -284,7 +284,7 @@ function isLikelyVehicleCallsign(callsign: string | null | undefined): boolean {
 
   const normalized = callsign.trim().toUpperCase();
   // Common airport surface vehicle prefixes
-  return /^(BUS|TR|TUG|PUSH|FUEL|FOLLOW|OPS|SVC|RAMP|GSE|FIRE|RESCUE|RSC|CAR|VAN)\b/.test(normalized);
+  return /^(BUS|TR|TUG|PUSH|FUEL|FOLLOW|OPS|SVC|RAMP|GSE|FIRE|RESCUE|RSC|CAR|VAN)(?:\b|\d|[-_])/.test(normalized);
 }
 
 function categoryLabel(category: number | null): string {
@@ -355,6 +355,10 @@ function FlightInfoPanel({ flight, onClose }: FlightInfoPanelProps) {
         </button>
       </div>
       <div className="space-y-1 text-sm">
+        <p>
+          <span className="text-slate-400">Callsign:</span>{' '}
+          <span className="text-slate-700">{flight.callsign || 'N/A'}</span>
+        </p>
         <p>
           <span className="text-slate-400">ICAO24:</span>{' '}
           <span className="text-slate-700">{flight.icao24}</span>
