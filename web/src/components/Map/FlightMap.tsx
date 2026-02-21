@@ -65,12 +65,20 @@ export default function FlightMap({
       style: (feature) => {
         const heading = feature.get('heading') || 0;
         const icao24 = feature.get('icao24');
+        const onGround = feature.get('onGround');
         const isHighlighted =
           icao24 === selectedRef.current || icao24 === hoveredIcao.current;
+        const iconSrc = onGround
+          ? isHighlighted
+            ? '/vehicle-selected.svg'
+            : '/vehicle.svg'
+          : isHighlighted
+            ? '/plane-selected.svg'
+            : '/plane.svg';
         return new Style({
           image: new Icon({
-            src: isHighlighted ? '/plane-selected.svg' : '/plane.svg',
-            scale: 0.45,
+            src: iconSrc,
+            scale: onGround ? 0.35 : 0.45,
             rotation: (heading * Math.PI) / 180,
           }),
         });
