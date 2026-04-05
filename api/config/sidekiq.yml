@@ -7,7 +7,7 @@
 :scheduler:
   :schedule:
     flight_data_fetcher:
-      cron: '*/5 * * * *'  # Every 5 minutes
+      cron: '0 * * * *'  # Every hour
       class: FlightDataFetcherJob
       queue: data_fetcher
       description: "Fetch flight data from OpenSky API"
