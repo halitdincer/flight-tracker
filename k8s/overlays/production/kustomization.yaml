@@ -14,26 +14,3 @@ images:
     newTag: latest
   - name: ghcr.io/halitdincer/flight-tracker-web
     newTag: latest
-
-# Production-specific patches
-patches:
-  - patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: api
-      spec:
-        replicas: 2
-    target:
-      kind: Deployment
-      name: api
-  - patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: web
-      spec:
-        replicas: 2
-    target:
-      kind: Deployment
-      name: web

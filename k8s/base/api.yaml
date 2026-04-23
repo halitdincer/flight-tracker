@@ -5,7 +5,7 @@ metadata:
   name: api
   namespace: flight-tracker
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: api
@@ -37,11 +37,11 @@ spec:
                 name: api-config
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 10m
+              memory: 64Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 100m
+              memory: 128Mi
           livenessProbe:
             httpGet:
               path: /up
