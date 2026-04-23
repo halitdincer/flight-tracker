@@ -4,6 +4,14 @@ class FlightDataFetcherJob < ApplicationJob
   queue_as :data_fetcher
 
   def perform
+    # Skip stale jobs — after restarts, Sidekiq replays the entire backlog
+    # and burns through the OpenSky API quota in minutes
+    job_enqueued = enqueued_at.is_a?(Time) ? enqueued_at : Time.parse(enqueued_at.to_s) rescue nil
+    if job_enqueued && job_enqueued < 10.minutes.ago
+      Rails.logger.info "[FlightDataFetcher] Skipping stale job (enqueued at #{enqueued_at})"
+      return
+    end
+
     client = OpenskyClient.new
     states = client.fetch_states
 
